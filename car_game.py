@@ -4,48 +4,48 @@ import random
 
 pygame.init()
 
-# ფანჯრის შექმნა
+# create the window
 width = 500
 height = 500
 screen_size = (width, height)
 screen = pygame.display.set_mode(screen_size)
 pygame.display.set_caption('Car Game')
 
-# ფერები
+# colors
 gray = (100, 100, 100)
 green = (76, 208, 56)
 red = (200, 0, 0)
 white = (255, 255, 255)
 yellow = (255, 232, 0)
 
-# გზის და მარკერის ზომები
+# road and marker sizes
 road_width = 300
 marker_width = 10
 marker_height = 50
 
-# ზოლის კოორდინატები
+# lane coordinates
 left_lane = 150
 center_lane = 250
 right_lane = 350
 lanes = [left_lane, center_lane, right_lane]
 
-# გზის და კიდეების მარკერები
+# road and edge markers
 road = (100, 0, road_width, height)
 left_edge_marker = (95, 0, marker_width, height)
 right_edge_marker = (395, 0, marker_width, height)
 
-# ზოლის მარკერების მოძრაობის ანიმაციისთვის
+# for animating movement of the lane markers
 lane_marker_move_y = 0
 
-# მოთამაშის საწყისი კოორდინატები
+# player's starting coordinates
 player_x = 250
 player_y = 400
 
-# ჩარჩოს პარამეტრები
+# frame settings
 clock = pygame.time.Clock()
 fps = 120
 
-# თამაშის პარამეტრები
+# game settings
 gameover = False
 speed = 2
 score = 0
@@ -55,7 +55,7 @@ class Vehicle(pygame.sprite.Sprite):
     def __init__(self, image, x, y):
         pygame.sprite.Sprite.__init__(self)
         
-        # შეამცირეთ სურათი ისე, რომ არ იყოს უფრო ფართო ვიდრე ზოლი
+        # scale the image down so it's not wider than the lane
         image_scale = 45 / image.get_rect().width
         new_width = image.get_rect().width * image_scale
         new_height = image.get_rect().height * image_scale
@@ -67,29 +67,29 @@ class Vehicle(pygame.sprite.Sprite):
 class PlayerVehicle(Vehicle):
     
     def __init__(self, x, y):
-        image = pygame.image.load('images/car.png')
+        image = pygame.image.load('car.png')
         super().__init__(image, x, y)
         
-# sprite ჯგუფები
+# sprite groups
 player_group = pygame.sprite.Group()
 vehicle_group = pygame.sprite.Group()
 
-# შექმენით მოთამაშის მანქანა
+# create the player's car
 player = PlayerVehicle(player_x, player_y)
 player_group.add(player)
 
-# ჩატვირთეთ მანქანის სურათები
+# load the vehicle images
 image_filenames = ['pickup_truck.png', 'semi_trailer.png', 'taxi.png', 'van.png']
 vehicle_images = []
 for image_filename in image_filenames:
-    image = pygame.image.load('images/' + image_filename)
+    image = pygame.image.load(image_filename)
     vehicle_images.append(image)
     
-# ჩატვირთეთ ავარიის სურათი
-crash = pygame.image.load('images/crash.png')
+# load the crash image
+crash = pygame.image.load('crash.png')
 crash_rect = crash.get_rect()
 
-# თამაში Loop
+# game loop
 running = True
 while running:
     
@@ -99,7 +99,7 @@ while running:
         if event.type == QUIT:
             running = False
             
-        # გადაიტანეთ მოთამაშის მანქანა მარცხენა/მარჯვენა ისრიანი ღილაკების გამოყენებით
+        # move the player's car using the left/right arrow keys
         if event.type == KEYDOWN:
             
             if event.key == K_LEFT and player.rect.center[0] > left_lane:
@@ -107,14 +107,14 @@ while running:
             elif event.key == K_RIGHT and player.rect.center[0] < right_lane:
                 player.rect.x += 100
                 
-            # შეამოწმეთ არის თუ არა გვერდითი დარტყმის შეჯახება ზოლის შეცვლის შემდეგ
+            # check if there's a side swipe collision after changing lanes
             for vehicle in vehicle_group:
                 if pygame.sprite.collide_rect(player, vehicle):
                     
                     gameover = True
                     
-                    # მოათავსეთ მოთამაშის მანქანა სხვა მანქანის გვერდით
-                    # და განსაზღვრეთ სად უნდა განთავსდეს ავარიის სურათი
+                    # place the player's car next to other vehicle
+                    # and determine where to position the crash image
                     if event.key == K_LEFT:
                         player.rect.left = vehicle.rect.right
                         crash_rect.center = [player.rect.left, (player.rect.center[1] + vehicle.rect.center[1]) / 2]
@@ -123,17 +123,17 @@ while running:
                         crash_rect.center = [player.rect.right, (player.rect.center[1] + vehicle.rect.center[1]) / 2]
             
             
-    # დახატე ბალახი
+    # draw the grass
     screen.fill(green)
     
-    # დახაზეთ გზა
+    # draw the road
     pygame.draw.rect(screen, gray, road)
     
-    # დახაზეთ კიდეების მარკერები
+    # draw the edge markers
     pygame.draw.rect(screen, yellow, left_edge_marker)
     pygame.draw.rect(screen, yellow, right_edge_marker)
     
-    # დახაზეთ ზოლის მარკერები
+    # draw the lane markers
     lane_marker_move_y += speed * 2
     if lane_marker_move_y >= marker_height * 2:
         lane_marker_move_y = 0
@@ -144,10 +144,10 @@ while running:
     # draw the player's car
     player_group.draw(screen)
     
-    # მანქანის დამატება
+    # add a vehicle
     if len(vehicle_group) < 2:
         
-        # უზრუნველყოს საკმარისი უფსკრული მანქანებს შორის
+        # ensure there's enough gap between vehicles
         add_vehicle = True
         for vehicle in vehicle_group:
             if vehicle.rect.top < vehicle.rect.height * 1.5:
@@ -155,45 +155,45 @@ while running:
                 
         if add_vehicle:
             
-            # აირჩიეთ შემთხვევითი ზოლი
+            # select a random lane
             lane = random.choice(lanes)
             
-            # აირჩიეთ მანქანის შემთხვევითი სურათი
+            # select a random vehicle image
             image = random.choice(vehicle_images)
             vehicle = Vehicle(image, lane, height / -2)
             vehicle_group.add(vehicle)
-
-    # მანქანების მოძრაობა
+    
+    # make the vehicles move
     for vehicle in vehicle_group:
         vehicle.rect.y += speed
         
-        # ამოიღეთ მანქანა ეკრანიდან გასვლის შემდეგ
+        # remove vehicle once it goes off screen
         if vehicle.rect.top >= height:
             vehicle.kill()
             
-            # ქულის დამატება
+            # add to score
             score += 1
             
-            # დააჩქარეთ თამაში 5 მანქანის გავლის შემდეგ
+            # speed up the game after passing 5 vehicles
             if score > 0 and score % 5 == 0:
                 speed += 1
     
-    # დახაზეთ მანქანები
+    # draw the vehicles
     vehicle_group.draw(screen)
     
-    # ქულების ჩვენება
+    # display the score
     font = pygame.font.Font(pygame.font.get_default_font(), 16)
     text = font.render('Score: ' + str(score), True, white)
     text_rect = text.get_rect()
     text_rect.center = (50, 400)
     screen.blit(text, text_rect)
     
-    # შეამოწმეთ არის თუ არა თავი შეჯახებისას
+    # check if there's a head on collision
     if pygame.sprite.spritecollide(player, vehicle_group, True):
         gameover = True
         crash_rect.center = [player.rect.center[0], player.rect.top]
             
-    # თამაშის ჩვენება დასრულდა
+    # display game over
     if gameover:
         screen.blit(crash, crash_rect)
         
@@ -207,7 +207,7 @@ while running:
             
     pygame.display.update()
 
-    # დაელოდეთ მომხმარებლის შეყვანის ხელახლა დაკვრას ან გასვლას
+    # wait for user's input to play again or exit
     while gameover:
         
         clock.tick(fps)
@@ -218,17 +218,17 @@ while running:
                 gameover = False
                 running = False
                 
-            # მიიღეთ მომხმარებლის შეყვანა (y ან n)
+            # get the user's input (y or n)
             if event.type == KEYDOWN:
                 if event.key == K_y:
-                    # თამაშის გადატვირთვა
+                    # reset the game
                     gameover = False
                     speed = 2
                     score = 0
                     vehicle_group.empty()
                     player.rect.center = [player_x, player_y]
                 elif event.key == K_n:
-                    # მარყუჟებიდან გასვლა
+                    # exit the loops
                     gameover = False
                     running = False
 
