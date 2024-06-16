@@ -144,7 +144,7 @@ while running:
     # დახატეთ მოთამაშის მანქანა
     player_group.draw(screen)
     
-    # add a vehicle
+    # მანქანის დამატება
     if len(vehicle_group) < 2:
         
         # უზრუნველყოს საკმარისი უფსკრული მანქანებს შორის
